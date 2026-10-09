@@ -1,0 +1,63 @@
+variable "vault_kv_path" {
+  description = "Path of the Vault KV v2 engine the admin credential is kept in; the platform gives it."
+  type        = string
+}
+
+variable "namespace" {
+  description = "Nomad namespace the job runs in."
+  type        = string
+  default     = "default"
+}
+
+variable "job_name" {
+  description = "Name of the Nomad job and the Consul service other apps reach it by."
+  type        = string
+  default     = "postgres"
+  validation {
+    condition     = can(regex("^[a-z][a-z0-9-]{0,30}$", var.job_name))
+    error_message = "job_name must be lowercase letters, digits and -, starting with a letter."
+  }
+}
+
+variable "datacenters" {
+  description = "Nomad datacenters the job may run in."
+  type        = list(string)
+  default     = ["*"]
+}
+
+variable "image" {
+  description = "PostgreSQL container image, pinned by a fixed tag or a digest."
+  type        = string
+  default     = "postgres:16.10"
+}
+
+variable "admin_user" {
+  description = "Name of the PostgreSQL superuser. Its password is generated and kept in Vault; consumer apps use it to create their own role and database."
+  type        = string
+  default     = "postgres"
+  validation {
+    condition     = can(regex("^[a-z][a-z0-9_]{0,62}$", var.admin_user))
+    error_message = "admin_user must be lowercase letters, digits and _, starting with a letter."
+  }
+}
+
+variable "port" {
+  description = "Port PostgreSQL listens on, on the internal host network. Consumers connect to the server's internal address on this port."
+  type        = number
+  default     = 5432
+}
+
+variable "internal_host_network" {
+  description = "Nomad host network PostgreSQL binds to. Never the public network: a shared database is reachable only inside the platform."
+  type        = string
+  default     = "default"
+}
+
+variable "resources" {
+  description = "CPU (MHz) and memory (MB) for the PostgreSQL task."
+  type = object({
+    cpu    = optional(number, 500)
+    memory = optional(number, 1024)
+  })
+  default = {}
+}
