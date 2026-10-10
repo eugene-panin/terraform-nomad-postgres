@@ -38,3 +38,13 @@
 ## v0.1.5
 
 - The mesh sidecar has its own tags (mesh-sidecar), not the service's.
+
+## v0.1.6
+
+- The mesh's config entries are written as Consul stores them (the empty
+  blocks it fills into service-defaults; Type and Precedence on each intention
+  source), so a plan no longer rewrites them on every apply.
+- In the mesh the client port is static only while it is in
+  `mesh.keep_open_ports`: Nomad lets any static port bypass the sidecar, so a
+  static port left the service open outside the mesh. Mesh clients reach it
+  through Envoy at `<job_name>.virtual.consul` either way.
