@@ -30,3 +30,7 @@
 
 - In the mesh the health check is `pg_isready` inside the container: Nomad takes
   no tcp check on a service in the mesh (v0.1.2 could not be applied with it on).
+
+## v0.1.4
+
+- In the mesh Envoy runs as uid 1337 (an app on Envoy's default uid bypassed the mesh); the intentions entry exists only when some service is allowed.

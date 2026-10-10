@@ -48,6 +48,10 @@ job "${job_name}" {
         sidecar_service {
           proxy {
             transparent_proxy {
+              # Envoy runs as uid 1337, which no app uses: the transparent proxy
+              # lets Envoy's own uid out unredirected, so an app sharing it (Odoo
+              # runs as 101, Envoy's default) would bypass the mesh.
+              uid                   = "1337"
               no_dns                = true
               exclude_inbound_ports = ${jsonencode(concat([for p in mesh.keep_open_ports : tostring(p)], ["9102"]))}
             }
@@ -58,6 +62,10 @@ job "${job_name}" {
         }
 
         sidecar_task {
+          env {
+            ENVOY_UID = "1337"
+          }
+
           resources {
             cpu        = 50
             memory     = 32

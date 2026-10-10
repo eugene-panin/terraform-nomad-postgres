@@ -63,6 +63,7 @@ run "it_joins_the_mesh" {
       && strcontains(nomad_job.postgres.jobspec, "name     = \"postgres-envoy\"")
       && strcontains(nomad_job.postgres.jobspec, "command  = \"pg_isready\"")
       && !strcontains(nomad_job.postgres.jobspec, "type     = \"tcp\"")
+      && strcontains(nomad_job.postgres.jobspec, "uid                   = \"1337\"")
     )
     error_message = "In the mesh PostgreSQL must sit behind an Envoy sidecar, keep the given ports open, and expose Envoy's metrics."
   }
