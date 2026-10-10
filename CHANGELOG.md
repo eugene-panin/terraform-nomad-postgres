@@ -16,3 +16,12 @@
 - The task reserves 768 MB, sized to its use, and may grow to 2048 MB:
   `resources.memory_max` (Nomad memory oversubscription, which the platform
   turns on). It reserved more than it used before.
+
+## v0.1.2
+
+- `mesh`: PostgreSQL can join the Consul service mesh — an Envoy sidecar with the
+  transparent proxy, so mesh services reach it as `<job_name>.virtual.consul` over
+  mTLS and only those in `mesh.allow` may (service-intentions; the platform's ACLs
+  deny the rest). `mesh.keep_open_ports` stay reachable outside the mesh while
+  clients move in. Envoy's metrics are a `<job_name>-envoy` service tagged for
+  the platform's Alloy, for Consul's topology.

@@ -51,3 +51,12 @@ idempotently. The server is never told about it.
 make lint
 make module-tests
 ```
+
+## Service mesh
+
+With `mesh.enabled`, the job gets an Envoy sidecar (transparent proxy) and
+Consul config entries: `service-defaults` (`mesh.protocol`, tcp) and
+`service-intentions` allowing only `mesh.allow`. Mesh clients connect to
+`<job_name>.virtual.consul:5432`. While some clients are not in the mesh yet,
+keep `5432` in `mesh.keep_open_ports`; drop it once they all are, and the
+database is reachable only as the intentions allow.

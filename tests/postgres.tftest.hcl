@@ -1,3 +1,4 @@
+mock_provider "consul" {}
 mock_provider "nomad" {}
 mock_provider "random" {}
 mock_provider "vault" {}
@@ -45,5 +46,39 @@ run "memory_is_reserved_by_use_and_may_grow" {
   assert {
     condition     = strcontains(nomad_job.postgres.jobspec, "memory     = 768") && strcontains(nomad_job.postgres.jobspec, "memory_max = 2048")
     error_message = "The task must reserve its usual memory and be allowed to grow to memory_max."
+  }
+}
+
+run "it_joins_the_mesh" {
+  command = apply
+
+  variables {
+    mesh = { enabled = true, allow = ["odoo", "sauron-ui"], keep_open_ports = [5432] }
+  }
+
+  assert {
+    condition = (
+      strcontains(nomad_job.postgres.jobspec, "transparent_proxy")
+      && strcontains(nomad_job.postgres.jobspec, "exclude_inbound_ports = [\"5432\",\"9102\"]")
+      && strcontains(nomad_job.postgres.jobspec, "name     = \"postgres-envoy\"")
+    )
+    error_message = "In the mesh PostgreSQL must sit behind an Envoy sidecar, keep the given ports open, and expose Envoy's metrics."
+  }
+
+  assert {
+    condition = (
+      jsondecode(consul_config_entry.intentions[0].config_json).Sources == [{ Name = "odoo", Action = "allow" }, { Name = "sauron-ui", Action = "allow" }]
+      && jsondecode(consul_config_entry.defaults[0].config_json).Protocol == "tcp"
+    )
+    error_message = "Only the allowed services may connect, and the protocol is tcp."
+  }
+}
+
+run "out_of_the_mesh_by_default" {
+  command = apply
+
+  assert {
+    condition     = !strcontains(nomad_job.postgres.jobspec, "connect {") && length(consul_config_entry.intentions) == 0
+    error_message = "Without mesh.enabled there is no sidecar and no intentions."
   }
 }

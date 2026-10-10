@@ -17,6 +17,14 @@ job "${job_name}" {
         to           = 5432
         host_network = "${internal_network}"
       }
+%{ if mesh.enabled ~}
+
+      # Envoy's metrics, scraped by the platform's Alloy for Consul's topology.
+      port "envoy_metrics" {
+        to           = 9102
+        host_network = "${internal_network}"
+      }
+%{ endif ~}
     }
 
     volume "data" {
@@ -30,6 +38,34 @@ job "${job_name}" {
       name     = "${job_name}"
       port     = "postgres"
       provider = "consul"
+%{ if mesh.enabled ~}
+
+      # In the mesh: an Envoy sidecar takes the traffic (transparent proxy), so
+      # mesh services reach PostgreSQL as ${job_name}.virtual.consul, over mTLS,
+      # as the intentions allow. The ports kept open (and Envoy's metrics) are
+      # still reached directly.
+      connect {
+        sidecar_service {
+          proxy {
+            transparent_proxy {
+              no_dns                = true
+              exclude_inbound_ports = ${jsonencode(concat([for p in mesh.keep_open_ports : tostring(p)], ["9102"]))}
+            }
+            config {
+              envoy_prometheus_bind_addr = "0.0.0.0:9102"
+            }
+          }
+        }
+
+        sidecar_task {
+          resources {
+            cpu        = 50
+            memory     = 32
+            memory_max = 128
+          }
+        }
+      }
+%{ endif ~}
 
       check {
         type     = "tcp"
@@ -37,6 +73,15 @@ job "${job_name}" {
         timeout  = "5s"
       }
     }
+%{ if mesh.enabled ~}
+
+    service {
+      name     = "${job_name}-envoy"
+      port     = "envoy_metrics"
+      provider = "consul"
+      tags     = ["metrics"]
+    }
+%{ endif ~}
 
     task "postgres" {
       driver = "docker"
