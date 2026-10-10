@@ -25,3 +25,8 @@
   deny the rest). `mesh.keep_open_ports` stay reachable outside the mesh while
   clients move in. Envoy's metrics are a `<job_name>-envoy` service tagged for
   the platform's Alloy, for Consul's topology.
+
+## v0.1.3
+
+- In the mesh the health check is `pg_isready` inside the container: Nomad takes
+  no tcp check on a service in the mesh (v0.1.2 could not be applied with it on).

@@ -67,11 +67,24 @@ job "${job_name}" {
       }
 %{ endif ~}
 
+%{ if mesh.enabled ~}
+      # Nomad takes no tcp check on a service in the mesh: PostgreSQL is asked
+      # from inside its own container instead.
+      check {
+        type     = "script"
+        task     = "postgres"
+        command  = "pg_isready"
+        args     = ["-h", "127.0.0.1", "-p", "5432", "-U", "${admin_user}"]
+        interval = "15s"
+        timeout  = "5s"
+      }
+%{ else ~}
       check {
         type     = "tcp"
         interval = "15s"
         timeout  = "5s"
       }
+%{ endif ~}
     }
 %{ if mesh.enabled ~}
 
