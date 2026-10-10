@@ -10,3 +10,9 @@
 - The superuser password is generated and kept in Vault. The server knows
   nothing about the databases on it: each consumer app reads the superuser
   credential and creates its own role and database.
+
+## v0.1.1
+
+- The task reserves 768 MB, sized to its use, and may grow to 2048 MB:
+  `resources.memory_max` (Nomad memory oversubscription, which the platform
+  turns on). It reserved more than it used before.

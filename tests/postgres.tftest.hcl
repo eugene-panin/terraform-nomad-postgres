@@ -38,3 +38,12 @@ run "it_binds_the_internal_network_only" {
     error_message = "PostgreSQL is a backend service; it must not be routed by Traefik."
   }
 }
+
+run "memory_is_reserved_by_use_and_may_grow" {
+  command = apply
+
+  assert {
+    condition     = strcontains(nomad_job.postgres.jobspec, "memory     = 768") && strcontains(nomad_job.postgres.jobspec, "memory_max = 2048")
+    error_message = "The task must reserve its usual memory and be allowed to grow to memory_max."
+  }
+}
