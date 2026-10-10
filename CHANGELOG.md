@@ -34,3 +34,7 @@
 ## v0.1.4
 
 - In the mesh Envoy runs as uid 1337 (an app on Envoy's default uid bypassed the mesh); the intentions entry exists only when some service is allowed.
+
+## v0.1.5
+
+- The mesh sidecar has its own tags (mesh-sidecar), not the service's.
