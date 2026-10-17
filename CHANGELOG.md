@@ -54,3 +54,9 @@
 - Envoy passes the mesh's traffic to the port inside the group
   (`local_service_port`): with the port dynamic, it passed it to the host
   port the service is registered with, where nothing listens.
+
+## v0.1.8
+
+- `service_tags` and `service_meta`: tags and meta of the Consul service
+  clients reach it by, such as `damstack.provides=postgres@16`. None by
+  default, so the job is as before.

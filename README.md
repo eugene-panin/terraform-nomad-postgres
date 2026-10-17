@@ -39,6 +39,8 @@ idempotently. The server is never told about it.
 | `port` | `5432` | port on the internal host network |
 | `internal_host_network` | `default` | host network it binds to |
 | `resources` | `{500, 1024}` | `{cpu, memory}` |
+| `service_tags` | `[]` | tags of the Consul service, such as `damstack.provides=<capability>` |
+| `service_meta` | `{}` | meta of the Consul service, what else a client needs |
 
 ## Outputs
 
